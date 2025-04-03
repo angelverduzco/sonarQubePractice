@@ -5,6 +5,7 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   sonarqube:
     name: SonarQube
@@ -42,7 +43,7 @@ jobs:
         run: |
           curl -sSL https://get.dependency-check.org | sh
           ./dependency-check/bin/dependency-check.sh --project "sonarQubePractice" --format "ALL" --out "./dependency-check-report"
-            - name: Fail on Critical Vulnerabilities
+      - name: Fail on Critical Vulnerabilities
         run: |
           if grep -q "CRITICAL" ./dependency-check-report/dependency-check-report.json; then
             echo "Critical vulnerabilities found. Failing the build."
@@ -57,8 +58,8 @@ jobs:
       - name: Run truffleHog
         run: |
           pip install truffleHog
-          trufflehog git --json .
-          - name: Fail on Secrets Found
+          trufflehog git --json . > secret-scan-report.json
+      - name: Fail on Secrets Found
         run: |
           if [[ -s secret-scan-report.json ]]; then
             echo "Secrets found in the code. Failing the build."
