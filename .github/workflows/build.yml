@@ -62,7 +62,7 @@ jobs:
         run: pip install trufflehog
       - name: Run truffleHog Scan
         run: |
-          trufflehog filesystem --path . --json > secret-scan-report.json
+          trufflehog . --json > secret-scan-report.json
       - name: Fail on Secrets Found
         run: |
           if [[ -s secret-scan-report.json ]]; then
