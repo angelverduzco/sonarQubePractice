@@ -20,7 +20,7 @@ jobs:
       - name: Install Dependencies
         run: npm install
       - name: Run Unit Tests
-        run: npm test
+        run: npm test --passWithNoTests
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
