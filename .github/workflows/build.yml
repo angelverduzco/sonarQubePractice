@@ -39,9 +39,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Download OWASP Dependency Check
+        run: |
+          wget https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.9/dependency-check-9.0.9-release.zip
+          unzip dependency-check-9.0.9-release.zip
       - name: Run OWASP Dependency Check
         run: |
-          curl -sSL https://get.dependency-check.org | sh
           ./dependency-check/bin/dependency-check.sh --project "sonarQubePractice" --format "ALL" --out "./dependency-check-report"
       - name: Fail on Critical Vulnerabilities
         run: |
@@ -55,10 +58,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run truffleHog
-        run: |
-          pip install truffleHog
-          trufflehog git --json . > secret-scan-report.json
+      - name: Install truffleHog
+        run: pip install trufflehog
+      - name: Run truffleHog Scan
+        run: trufflehog filesystem --directory . --json > secret-scan-report.json
       - name: Fail on Secrets Found
         run: |
           if [[ -s secret-scan-report.json ]]; then
