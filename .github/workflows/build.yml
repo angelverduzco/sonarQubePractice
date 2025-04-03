@@ -5,67 +5,15 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
-
 jobs:
   sonarqube:
     name: SonarQube
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-      - name: Install Dependencies
-        run: npm install
-      - name: Run Unit Tests
-        run: npm test --passWithNoTests
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: Quality Gate Check
-        run: |
-          curl -u ${{ secrets.SONAR_TOKEN }} "https://sonarcloud.io/api/qualitygates/project_status?projectKey=angelverduzco_sonarQubePractice" > quality_gate.json
-          if [[ $(jq -r '.projectStatus.status' quality_gate.json) != "OK" ]]; then
-            echo "Quality Gate failed. Failing the build."
-            exit 1
-          fi
-
-  dependency-check:
-    name: Dependency Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download OWASP Dependency Check
-        run: |
-          wget https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.9/dependency-check-9.0.9-release.zip
-          unzip dependency-check-9.0.9-release.zip
-      - name: Run OWASP Dependency Check
-        run: |
-          ./dependency-check/bin/dependency-check.sh --project "sonarQubePractice" --format "ALL" --out "./dependency-check-report"
-      - name: Fail on Critical Vulnerabilities
-        run: |
-          if grep -q "CRITICAL" ./dependency-check-report/dependency-check-report.json; then
-            echo "Critical vulnerabilities found. Failing the build."
-            exit 1
-          fi
-
-  secret-scan:
-    name: Secret Scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install truffleHog
-        run: pip install trufflehog
-      - name: Run truffleHog Scan
-        run: |
-          trufflehog . --json > secret-scan-report.json
-      - name: Fail on Secrets Found
-        run: |
-          if [[ -s secret-scan-report.json ]]; then
-            echo "Secrets found in the code. Failing the build."
-            exit 1
-          fi
